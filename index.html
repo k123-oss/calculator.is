@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Calculator</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            margin: 0;
+        }
+        .calculator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2);
+            width: 350px;
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        #display {
+            width: 100%;
+            height: 60px;
+            font-size: 26px;
+            text-align: right;
+            margin-bottom: 20px;
+            border: 2px solid #3b3b98;
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: inset 0px 0px 5px rgba(0, 0, 0, 0.1);
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+        button {
+            padding: 15px;
+            font-size: 20px;
+            background-color: #3b3b98;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s;
+        }
+        button:hover {
+            background-color: #2a2a72;
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        .conversion-section, .memory-section {
+            margin-top: 20px;
+            width: 100%;
+            gap:10px;
+        }
+        input, select {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+        }
+        #conversionResult, #memoryResult {
+            margin-top: 10px;
+            font-size: 20px;
+            color: #333;
+        }
+        #credit {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #666;
+        }
+        .history-section {
+            margin-top: 20px;
+            width: 100%;
+            font-size: 18px;
+            color: #444;
+        }
+        #historyList {
+            list-style: none;
+            padding: 0;
+        }
+        #historyList li {
+            margin: 5px 0;
+            background-color: #eee;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            transform: scale(1.02);
+        }
+        .animated {
+            background-color: #f2f2f2;
+            animation: blink 0.2s ease-in-out;
+        }
+        @keyframes blink {
+            from { opacity: 1; }
+            to { opacity: 0.8; }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <input type="text" id="display" disabled>
+        <div class="buttons">
+            <button onclick="clearDisplay()">C</button>
+            <button onclick="deleteLast()">Del</button>
+            <button onclick="appendOperator('%')">%</button>
+            <button onclick="appendOperator('/')">/</button>
+            <button onclick="calculate()">=</button>
+
+            <button onclick="appendNumber(7)">7</button>
+            <button onclick="appendNumber(8)">8</button>
+            <button onclick="appendNumber(9)">9</button>
+            <button onclick="appendOperator('*')">*</button>
+            <button onclick="appendFunction('Math.sqrt')">√</button>
+
+            <button onclick="appendNumber(4)">4</button>
+            <button onclick="appendNumber(5)">5</button>
+            <button onclick="appendNumber(6)">6</button>
+            <button onclick="appendOperator('-')">-</button>
+            <button onclick="appendFunction('Math.pow', 2)">x²</button>
+
+            <button onclick="appendNumber(1)">1</button>
+            <button onclick="appendNumber(2)">2</button>
+            <button onclick="appendNumber(3)">3</button>
+            <button onclick="appendOperator('+')">+</button>
+            <button onclick="appendFunction('Math.pow', 3)">x³</button>
+
+            <button onclick="appendNumber(0)">0</button>
+            <button onclick="appendDot()">.</button>
+            <button onclick="appendFunction('Math.PI')">π</button>
+            <button onclick="appendFunction('Math.sin')">sin</button>
+            <button onclick="appendFunction('Math.cos')">cos</button>
+            
+            <button onclick="appendFunction('Math.tan')">tan</button>
+            <button onclick="appendFunction('Math.log')">log</button>
+            <button onclick="appendFunction('Math.E')">e</button>
+            <button onclick="factorial()">n!</button>
+            <button onclick="appendExponent()">xⁿ</button>
+        </div>
+
+        <div class="conversion-section">
+            <label for="conversion">Unit Converter:</label>
+            <select id="conversion" onchange="convert()">
+                <option value="">Select conversion</option>
+                <option value="km-to-miles">Kilometers to Miles</option>
+                <option value="miles-to-km">Miles to Kilometers</option>
+                <option value="kg-to-lbs">Kilograms to Pounds</option>
+                <option value="lbs-to-kg">Pounds to Kilograms</option>
+                <option value="c-to-f">Celsius to Fahrenheit</option>
+                <option value="f-to-c">Fahrenheit to Celsius</option>
+                <option value="m-to-ft">Meters to Feet</option>
+                <option value="ft-to-m">Feet to Meters</option>
+                <option value="liters-to-gallons">Liters to Gallons</option>
+                <option value="gallons-to-liters">Gallons to Liters</option>
+            </select>
+            <input type="text" id="conversionInput" placeholder="Enter value">
+            <button onclick="convert()">Convert</button>
+            <div id="conversionResult"></div>
+        </div>
+
+        <div class="memory-section">
+            <button onclick="storeInMemory()">MS (Store)</button>
+            <button onclick="recallFromMemory()">MR (Recall)</button>
+            <button onclick="clearMemory()">MC (Clear)</button>
+            <div id="memoryResult">Memory: <span id="memoryValue"></span></div>
+        </div>
+
+        <div class="history-section">
+            <h3>Calculation History:</h3>
+            <ul id="historyList"></ul>
+        </div>
+
+        <div id="credit">
+            Calculator by <a href="https://www.instagram.com/__kaushalkumar__" target="_blank">@__kaushalkumar__</a>
+        </div>
+    </div>
+
+    <script>
+        let display = document.getElementById("display");
+        let memory = null;
+        let history = [];
+
+        function appendNumber(number) {
+            display.value += number;
+        }
+
+        function appendOperator(operator) {
+            display.value += operator;
+        }
+
+        function appendDot() {
+            if (!display.value.includes('.')) {
+                display.value += '.';
+            }
+        }
+
+        function appendFunction(func, exponent = null) {
+            let result;
+            try {
+                if (func === 'Math.pow') {
+                    result = Math.pow(parseFloat(display.value), exponent);
+                } else if (func === 'Math.PI') {
+                    result = Math.PI;
+                } else if (func === 'Math.E') {
+                    result = Math.E;
+                } else {
+                    result = eval(`${func}(${parseFloat(display.value)})`);
+                }
+                display.value = result;
+            } catch (e) {
+                display.value = 'Error';
+            }
+        }
+
+        function appendExponent() {
+            display.value += '**';
+        }
+
+        function factorial() {
+            let n = parseInt(display.value);
+            if (n === 0 || n === 1) {
+                display.value = 1;
+            } else {
+                let result = 1;
+                for (let i = 2; i <= n; i++) {
+                    result *= i;
+                }
+                display.value = result;
+            }
+        }
+
+        function calculate() {
+            try {
+                let result = eval(display.value);
+                display.value = result;
+                addToHistory(result);
+            } catch (e) {
+                display.value = 'Error';
+            }
+        }
+
+        function clearDisplay() {
+            display.value = '';
+        }
+
+        function deleteLast() {
+            display.value = display.value.slice(0, -1);
+        }
+
+        function storeInMemory() {
+            memory = display.value;
+            document.getElementById('memoryValue').textContent = memory;
+        }
+
+        function recallFromMemory() {
+            if (memory !== null) {
+                display.value = memory;
+            }
+        }
+
+        function clearMemory() {
+            memory = null;
+            document.getElementById('memoryValue').textContent = '';
+        }
+
+        function addToHistory(result) {
+            history.push(result);
+            updateHistoryUI();
+        }
+
+        function updateHistoryUI() {
+            let historyList = document.getElementById("historyList");
+            historyList.innerHTML = '';
+            history.forEach((entry, index) => {
+                let li = document.createElement('li');
+                li.textContent = `Calculation ${index + 1}: ${entry}`;
+                historyList.appendChild(li);
+            });
+        }
+
+        function convert() {
+            let conversionType = document.getElementById('conversion').value;
+            let value = parseFloat(document.getElementById('conversionInput').value);
+            let result;
+
+            switch (conversionType) {
+                case 'km-to-miles':
+                    result = value * 0.621371;
+                    break;
+                case 'miles-to-km':
+                    result = value * 1.60934;
+                    break;
+                case 'kg-to-lbs':
+                    result = value * 2.20462;
+                    break;
+                case 'lbs-to-kg':
+                    result = value * 0.453592;
+                    break;
+                case 'c-to-f':
+                    result = (value * 9/5) + 32;
+                    break;
+                case 'f-to-c':
+                    result = (value - 32) * 5/9;
+                    break;
+                case 'm-to-ft':
+                    result = value * 3.28084;
+                    break;
+                case 'ft-to-m':
+                    result = value * 0.3048;
+                    break;
+                case 'liters-to-gallons':
+                    result = value * 0.264172;
+                    break;
+                case 'gallons-to-liters':
+                    result = value * 3.78541;
+                    break;
+                default:
+                    result = 'Invalid conversion';
+            }
+
+            document.getElementById('conversionResult').textContent = result;
+        }
+    </script>
+</body>
+</html>
